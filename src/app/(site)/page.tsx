@@ -7,6 +7,7 @@ import { AboutPreview } from '@/components/public/AboutPreview';
 import { ContactSection } from '@/components/public/ContactSection';
 import { Layers } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {

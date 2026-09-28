@@ -1,5 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import os from 'os';
+import { revalidatePath } from 'next/cache';
 import {
   PortfolioData,
   Project,
@@ -11,10 +13,17 @@ import {
   Contact,
   Settings
 } from '@/types/portfolio';
+import { generateSlug } from '@/lib/slug';
+
+export { generateSlug };
 
 // Path to data/portfolio.json at the workspace root
 const DATA_DIR = path.join(process.cwd(), 'data');
 const PORTFOLIO_FILE = path.join(DATA_DIR, 'portfolio.json');
+const TMP_FILE = path.join(os.tmpdir(), 'darshan_portfolio_cache.json');
+
+// In-memory cache for ultra-fast serverless reads & fallback
+let memoryPortfolioCache: PortfolioData | null = null;
 
 const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
   profile: {
@@ -59,6 +68,130 @@ const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
 };
 
 /**
+ * Merge partial data safely with defaults
+ */
+function mergeWithDefaults(parsed: Partial<PortfolioData>): PortfolioData {
+  return {
+    profile: { ...DEFAULT_PORTFOLIO_DATA.profile, ...(parsed.profile || {}) },
+    socials: { ...DEFAULT_PORTFOLIO_DATA.socials, ...(parsed.socials || {}) },
+    hero: { ...DEFAULT_PORTFOLIO_DATA.hero, ...(parsed.hero || {}) },
+    services: Array.isArray(parsed.services) ? parsed.services : [],
+    projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+    about: { ...DEFAULT_PORTFOLIO_DATA.about, ...(parsed.about || {}) },
+    contact: { ...DEFAULT_PORTFOLIO_DATA.contact, ...(parsed.contact || {}) },
+    settings: { ...DEFAULT_PORTFOLIO_DATA.settings, ...(parsed.settings || {}) }
+  };
+}
+
+/**
+ * Optional KV / Upstash Redis helper for zero-latency distributed storage
+ */
+function getKvConfig() {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (url && token) {
+    return { url: url.replace(/\/$/, ''), token };
+  }
+  return null;
+}
+
+async function fetchFromKv(): Promise<PortfolioData | null> {
+  const kv = getKvConfig();
+  if (!kv) return null;
+
+  try {
+    const res = await fetch(`${kv.url}/get/darshan_portfolio_data`, {
+      headers: { Authorization: `Bearer ${kv.token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json && json.result) {
+      const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
+      return parsed;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch from KV:', err);
+  }
+  return null;
+}
+
+async function saveToKv(data: PortfolioData): Promise<void> {
+  const kv = getKvConfig();
+  if (!kv) return;
+
+  try {
+    const payload = JSON.stringify(data);
+    await fetch(`${kv.url}/set/darshan_portfolio_data`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${kv.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('Failed to save to KV:', err);
+  }
+}
+
+/**
+ * Optional GitHub API Sync: commits changes directly to GitHub repository
+ * when GITHUB_TOKEN is configured in Vercel Environment Variables.
+ */
+async function syncToGithub(data: PortfolioData): Promise<void> {
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (!token) return;
+
+  const repo = process.env.GITHUB_REPOSITORY || 'KrishnaNaik6/darshan-portfolio';
+  const branch = process.env.GITHUB_BRANCH || 'main';
+  const filePath = 'data/portfolio.json';
+  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+
+  try {
+    let sha: string | undefined;
+    const getRes = await fetch(`${url}?ref=${branch}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'DarshanPortfolio-CMS',
+      },
+      cache: 'no-store',
+    });
+
+    if (getRes.ok) {
+      const getJson = await getRes.json();
+      sha = getJson.sha;
+    }
+
+    const content = Buffer.from(JSON.stringify(data, null, 2), 'utf-8').toString('base64');
+    const putRes = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'DarshanPortfolio-CMS',
+      },
+      body: JSON.stringify({
+        message: 'chore(portfolio): update portfolio content via admin CMS',
+        content,
+        sha,
+        branch,
+      }),
+    });
+
+    if (putRes.ok) {
+      console.log('Successfully committed updated portfolio to GitHub repository!');
+    } else {
+      console.warn('GitHub API commit returned non-200:', putRes.status, await putRes.text());
+    }
+  } catch (err) {
+    console.error('Error committing to GitHub:', err);
+  }
+}
+
+/**
  * Ensure data folder and file exist
  */
 async function ensureDataFileExists(): Promise<void> {
@@ -69,57 +202,100 @@ async function ensureDataFileExists(): Promise<void> {
     } catch {
       await fs.writeFile(PORTFOLIO_FILE, JSON.stringify(DEFAULT_PORTFOLIO_DATA, null, 2), 'utf-8');
     }
-  } catch (error) {
-    console.error('Error ensuring portfolio data file exists:', error);
+  } catch {
+    // In serverless environment like Vercel, directory is read-only
   }
 }
 
 /**
- * Reads and returns the complete portfolio data
+ * Reads and returns the complete portfolio data with multi-tier fallback
  */
 export async function getPortfolioData(): Promise<PortfolioData> {
+  // 1. Check KV Storage (highest priority in cloud production if configured)
+  const kvData = await fetchFromKv();
+  if (kvData) {
+    const merged = mergeWithDefaults(kvData);
+    memoryPortfolioCache = merged;
+    return merged;
+  }
+
+  // 2. Check /tmp file (writable on Vercel serverless and shared across worker threads)
+  try {
+    const rawTmp = await fs.readFile(TMP_FILE, 'utf-8');
+    const parsedTmp = JSON.parse(rawTmp);
+    if (parsedTmp && (Array.isArray(parsedTmp.projects) || parsedTmp.profile)) {
+      const merged = mergeWithDefaults(parsedTmp);
+      memoryPortfolioCache = merged;
+      return merged;
+    }
+  } catch {
+    // /tmp cache does not exist yet
+  }
+
+  // 3. Read from bundled data/portfolio.json
   await ensureDataFileExists();
   try {
     const raw = await fs.readFile(PORTFOLIO_FILE, 'utf-8');
     const parsed = JSON.parse(raw) as Partial<PortfolioData>;
-    
-    // Merge safely with defaults to prevent missing keys
-    return {
-      profile: { ...DEFAULT_PORTFOLIO_DATA.profile, ...(parsed.profile || {}) },
-      socials: { ...DEFAULT_PORTFOLIO_DATA.socials, ...(parsed.socials || {}) },
-      hero: { ...DEFAULT_PORTFOLIO_DATA.hero, ...(parsed.hero || {}) },
-      services: Array.isArray(parsed.services) ? parsed.services : [],
-      projects: Array.isArray(parsed.projects) ? parsed.projects : [],
-      about: { ...DEFAULT_PORTFOLIO_DATA.about, ...(parsed.about || {}) },
-      contact: { ...DEFAULT_PORTFOLIO_DATA.contact, ...(parsed.contact || {}) },
-      settings: { ...DEFAULT_PORTFOLIO_DATA.settings, ...(parsed.settings || {}) }
-    };
+    const merged = mergeWithDefaults(parsed);
+    memoryPortfolioCache = merged;
+    return merged;
   } catch (error) {
+    if (memoryPortfolioCache) {
+      return memoryPortfolioCache;
+    }
     console.error('Failed to read portfolio.json, falling back to default:', error);
     return DEFAULT_PORTFOLIO_DATA;
   }
 }
 
 /**
- * Safely writes portfolio data back to file with atomic write
+ * Safely writes portfolio data back to storage (KV, GitHub, /tmp, and local file)
  */
 export async function savePortfolioData(updatedData: PortfolioData): Promise<PortfolioData> {
-  await ensureDataFileExists();
-  const tempFile = `${PORTFOLIO_FILE}.tmp.${Date.now()}`;
+  const merged = mergeWithDefaults(updatedData);
+  memoryPortfolioCache = merged;
+
+  // 1. Write to /tmp file (always writable on Vercel and local)
   try {
-    const serialized = JSON.stringify(updatedData, null, 2);
+    await fs.writeFile(TMP_FILE, JSON.stringify(merged, null, 2), 'utf-8');
+  } catch (tmpErr) {
+    console.warn('Failed to write to /tmp file:', tmpErr);
+  }
+
+  // 2. Persist to KV / Upstash Redis if configured
+  try {
+    await saveToKv(merged);
+  } catch (kvErr) {
+    console.warn('KV persistence failed:', kvErr);
+  }
+
+  // 3. Persist to GitHub Repository if GITHUB_TOKEN is configured
+  try {
+    await syncToGithub(merged);
+  } catch (ghErr) {
+    console.warn('GitHub sync failed:', ghErr);
+  }
+
+  // 4. Write to local file on disk (works locally; caught gracefully on read-only Vercel runtime)
+  try {
+    await ensureDataFileExists();
+    const tempFile = `${PORTFOLIO_FILE}.tmp.${Date.now()}`;
+    const serialized = JSON.stringify(merged, null, 2);
     await fs.writeFile(tempFile, serialized, 'utf-8');
     await fs.rename(tempFile, PORTFOLIO_FILE);
-    return updatedData;
   } catch (error) {
-    try {
-      await fs.unlink(tempFile);
-    } catch {
-      // Ignore temp file cleanup failure
-    }
-    console.error('Failed to write portfolio data:', error);
-    throw new Error('Failed to save portfolio data to disk.');
+    console.warn('Local disk write skipped (read-only environment or Vercel serverless):', (error as Error)?.message);
   }
+
+  // Invalidate Next.js cache so updates appear instantly on live site
+  try {
+    revalidatePath('/', 'layout');
+  } catch {
+    // revalidatePath may not be available in non-request contexts
+  }
+
+  return merged;
 }
 
 /**
@@ -217,9 +393,6 @@ export async function updateSettings(partialSettings: Partial<Settings>): Promis
   await savePortfolioData(data);
   return data.settings;
 }
-
-import { generateSlug } from '@/lib/slug';
-export { generateSlug };
 
 /**
  * Add a new project
