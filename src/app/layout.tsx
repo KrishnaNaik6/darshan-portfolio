@@ -1,7 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { getPortfolioData } from '@/lib/portfolio';
+import { GlobalJsonLd } from '@/components/public/JsonLd';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -9,47 +12,72 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
+export const viewport: Viewport = {
+  themeColor: '#09090b',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getPortfolioData();
-  const title = `${data.profile.name || 'Darshan'} — ${data.profile.role || 'Video Editor & Graphic Designer'}`;
+  const name = data.profile.name || 'Darshan G Poojari';
+  const role = data.profile.role || 'Video Editor & Multimedia Designer';
+  const title = `${name} | ${role} — Official Portfolio`;
   const description =
     data.profile.bio ||
-    'Professional portfolio of Darshan, specializing in cinematic video editing, creative image retouching, and graphic design.';
+    'Official portfolio of Darshan G Poojari — specialized in cinematic video editing, YouTube content, commercial reels, photo retouching, and brand graphic design.';
 
   return {
+    metadataBase: new URL(SITE_URL),
     title: {
       default: title,
-      template: `%s | ${data.profile.name || 'Darshan'}`,
+      template: `%s | ${name}`,
     },
     description,
     keywords: [
-      'Darshan',
-      'Video Editor',
-      'Image Editing',
-      'Photo Retouching',
-      'Graphic Design',
-      'Color Grading',
-      'YouTube Thumbnails',
-      'Cinematic Edits',
-      'Premiere Pro',
-      'DaVinci Resolve',
-      'After Effects',
-      'Photoshop',
+      'Darshan G Poojari',
+      'Darshan Poojari',
+      'Darshan Video Editor',
+      'Darshan Editor Sirsi',
+      'Darshan Multimedia Designer',
+      'Video Editor Karnataka',
+      'Video Editor Sirsi',
+      'Cinematic Video Editor India',
+      'Freelance Video Editor',
+      'DaVinci Resolve Colorist',
+      'Adobe Premiere Pro Editor',
+      'After Effects Motion Graphics',
+      'Photo Retouching India',
+      'Creative Image Manipulation',
+      'Graphic Designer Sirsi',
+      'YouTube Video Editor',
+      'High-CTR YouTube Thumbnails',
+      'Instagram Reels Video Editor',
+      'Commercial Promo Video Editing',
+      'Wedding & Cinematic Teaser Editor',
     ],
-    authors: [{ name: data.profile.name || 'Darshan' }],
-    creator: data.profile.name || 'Darshan',
+    authors: [{ name, url: SITE_URL }],
+    creator: name,
+    publisher: name,
+    category: 'Video Editing, Multimedia, Graphic Design & Creative Services',
+    alternates: {
+      canonical: '/',
+    },
     openGraph: {
-      type: 'website',
+      type: 'profile',
       locale: 'en_US',
+      url: SITE_URL,
       title,
       description,
-      siteName: `${data.profile.name || 'Darshan'} Portfolio`,
+      siteName: `${name} — Video Editor & Designer Portfolio`,
       images: [
         {
-          url: data.profile.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200',
+          url: data.profile.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=90',
           width: 1200,
           height: 630,
-          alt: `${data.profile.name || 'Darshan'} - Portfolio`,
+          alt: `${name} - Video Editor & Multimedia Designer`,
+          type: 'image/jpeg',
         },
       ],
     },
@@ -57,22 +85,42 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      creator: '@darshan',
+      creator: '@darshan_poojari',
+      images: [data.profile.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=90'],
     },
     robots: {
       index: true,
       follow: true,
+      nocache: false,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    other: {
+      'geo.region': 'IN-KA',
+      'geo.placename': 'Sirsi',
+      'geo.position': '14.6195;74.8354',
+      'ICBM': '14.6195, 74.8354',
     },
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const data = await getPortfolioData();
+
   return (
     <html lang="en" className="dark scroll-smooth">
+      <head>
+        <GlobalJsonLd data={data} />
+      </head>
       <body className={`${inter.variable} font-sans bg-[#09090b] text-[#f4f4f5] antialiased min-h-screen flex flex-col`}>
         {children}
       </body>

@@ -6,6 +6,7 @@ import { MediaViewer } from '@/components/public/MediaViewer';
 import { ProjectCard } from '@/components/public/ProjectCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ProjectJsonLd } from '@/components/public/JsonLd';
 import {
   ArrowLeft,
   ArrowRight,
@@ -34,20 +35,48 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const categoryName =
+    project.category === 'video'
+      ? 'Video Editing'
+      : project.category === 'image'
+      ? 'Image Retouching'
+      : 'Graphic Design';
+
   return {
-    title: `${project.title} — Case Study`,
-    description: project.description,
+    title: `${project.title} — ${categoryName} Case Study | Darshan G Poojari`,
+    description: `${project.description} Edited and designed by Darshan G Poojari. Tools: ${(project.tools || []).join(', ')}.`,
+    keywords: [
+      project.title,
+      categoryName,
+      ...(project.tags || []),
+      ...(project.tools || []),
+      'Darshan G Poojari',
+      'Darshan Poojari',
+      'Darshan Video Editor',
+      'Video Editing Case Study',
+    ],
+    alternates: {
+      canonical: `/work/${project.slug}`,
+    },
     openGraph: {
-      title: project.title,
+      title: `${project.title} | Darshan G Poojari`,
       description: project.description,
+      type: project.type === 'video' ? 'video.other' : 'article',
+      url: `/work/${project.slug}`,
       images: [
         {
           url: project.thumbnail,
           width: 1200,
           height: 630,
-          alt: project.title,
+          alt: `${project.title} - ${categoryName} by Darshan G Poojari`,
         },
       ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${project.title} | Darshan G Poojari`,
+      description: project.description,
+      images: [project.thumbnail],
     },
   };
 }
@@ -89,7 +118,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       : 'graphic';
 
   return (
-    <div className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    <>
+      <ProjectJsonLd project={project} />
+      <div className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
       {/* Back Link */}
       <div>
         <Link
@@ -285,5 +316,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         </div>
       )}
     </div>
+    </>
   );
 }

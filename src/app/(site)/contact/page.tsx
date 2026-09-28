@@ -6,9 +6,27 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getPortfolioData();
+  const name = data.profile.name || 'Darshan G Poojari';
   return {
-    title: `Contact ${data.profile.name || 'Darshan'} — Inquiries & Bookings`,
-    description: `Get in touch with ${data.profile.name || 'Darshan'} for video editing, photo retouching, and graphic design projects.`,
+    title: `Hire ${name} | Video Editor & Multimedia Designer Inquiries`,
+    description: `Get in touch with ${name} for freelance video editing, YouTube editing, Reels, photo retouching, and graphic design projects. Instant WhatsApp and email contact.`,
+    keywords: [
+      `Contact ${name}`,
+      'Hire Video Editor',
+      'Freelance Video Editor Contact',
+      'Hire Video Editor Karnataka',
+      'Darshan G Poojari Email',
+      'Darshan G Poojari WhatsApp',
+      'Video Editing Services Inquiry',
+    ],
+    alternates: {
+      canonical: '/contact',
+    },
+    openGraph: {
+      title: `Contact & Inquiries | ${name}`,
+      description: `Discuss your upcoming video editing or design project with ${name}.`,
+      url: '/contact',
+    },
   };
 }
 

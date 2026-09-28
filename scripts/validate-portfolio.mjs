@@ -57,6 +57,28 @@ async function runTests() {
     assert(Array.isArray(portfolioJson.projects) && portfolioJson.projects.length > 0, 'Portfolio API returns valid projects array');
     assert(Array.isArray(portfolioJson.services) && portfolioJson.services.length > 0, 'Portfolio API returns valid services array');
 
+    console.log('\n--- 1b. Testing SEO Endpoints & Structured Data ---');
+
+    // 6a. Sitemap.xml
+    const resSitemap = await fetch(`${baseUrl}/sitemap.xml`);
+    assert(resSitemap.status === 200, 'GET /sitemap.xml returned 200 OK');
+    const textSitemap = await resSitemap.text();
+    assert(textSitemap.includes('<urlset') && textSitemap.includes('/work/'), 'Sitemap contains XML schema and dynamic project URLs');
+
+    // 6b. Robots.txt
+    const resRobots = await fetch(`${baseUrl}/robots.txt`);
+    assert(resRobots.status === 200, 'GET /robots.txt returned 200 OK');
+    const textRobots = await resRobots.text();
+    assert(textRobots.includes('User-Agent: Googlebot') && textRobots.includes('Disallow: /admin'), 'Robots.txt blocks admin and allows Googlebot/Bingbot');
+
+    // 6c. Manifest
+    const resManifest = await fetch(`${baseUrl}/manifest.webmanifest`);
+    assert(resManifest.status === 200, 'GET /manifest.webmanifest returned 200 OK');
+
+    // 6d. JSON-LD Verification
+    assert(textHome.includes('application/ld+json') && textHome.includes('Darshan G Poojari') && textHome.includes('ProfessionalService'), 'Home page contains rich Person and ProfessionalService JSON-LD schemas');
+    assert(textProj.includes('application/ld+json') && (textProj.includes('VideoObject') || textProj.includes('CreativeWork')), 'Project case study contains rich VideoObject/CreativeWork JSON-LD');
+
     console.log('\n--- 2. Testing Admin Security & Auth ---');
 
     // 7. Unauthenticated admin protection

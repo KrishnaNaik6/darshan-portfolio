@@ -7,9 +7,29 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getPortfolioData();
+  const name = data.profile.name || 'Darshan G Poojari';
   return {
-    title: 'Work & Portfolio',
-    description: `Browse ${data.projects.length}+ curated video editing, photo retouching, and graphic design projects by ${data.profile.name || 'Darshan'}.`,
+    title: `Selected Work & Creative Portfolio | ${name}`,
+    description: `Explore the full catalog of ${data.projects.length}+ cinematic video edits, high-end photo retouching, and graphic design projects created by ${name}.`,
+    keywords: [
+      'Darshan G Poojari Work',
+      'Darshan Poojari Portfolio',
+      'Video Editing Showreel',
+      'Cinematic Editing Portfolio',
+      'Photo Retouching Projects',
+      'YouTube Thumbnail Portfolio',
+      'Graphic Design Showcase',
+      'Video Editor Karnataka',
+      'Freelance Video Editor India',
+    ],
+    alternates: {
+      canonical: '/work',
+    },
+    openGraph: {
+      title: `Selected Work & Portfolio | ${name}`,
+      description: `Browse ${data.projects.length}+ curated video editing and visual design projects.`,
+      url: '/work',
+    },
   };
 }
 

@@ -20,11 +20,11 @@ export function Hero({ hero, profile }: HeroProps) {
       <div className="absolute inset-0 editorial-grid-bg opacity-40 pointer-events-none -z-10" />
 
       <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
-        {/* Availability / Tag Badge */}
+        {/* Availability / Artist Tag Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-zinc-800/90 bg-zinc-900/80 backdrop-blur-md shadow-sm">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
-          <span className="text-xs font-medium tracking-wider text-zinc-300 uppercase">
-            {profile.availabilityStatus || 'Available for Worldwide Projects'}
+          <span className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
+            {profile.name || 'Darshan G Poojari'} • {profile.role || 'Video Editor & Multimedia Designer'}
           </span>
         </div>
 

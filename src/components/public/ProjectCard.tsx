@@ -38,7 +38,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {/* Using standard img for resilience with arbitrary Google Drive and remote URLs */}
         <img
           src={thumbUrl}
-          alt={project.title}
+          alt={`${project.title} — ${categoryLabel} Showcase by Darshan G Poojari`}
           loading="lazy"
           className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />

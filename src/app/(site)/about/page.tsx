@@ -14,9 +14,27 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getPortfolioData();
+  const name = data.profile.name || 'Darshan G Poojari';
   return {
-    title: `About ${data.profile.name || 'Darshan'} — Editor & Designer`,
-    description: `Learn more about ${data.profile.name || 'Darshan'}, experience, editing philosophy, and creative software toolkit.`,
+    title: `About ${name} — Video Editor & Multimedia Designer`,
+    description: `Learn more about ${name}, background in multimedia production, editing philosophy, software toolkit (Premiere Pro, DaVinci Resolve, Photoshop), and education.`,
+    keywords: [
+      `About ${name}`,
+      'Darshan G Poojari Bio',
+      'Darshan Poojari Video Editor',
+      'Darshan Poojari Sirsi Karnataka',
+      'Video Editor Biography',
+      'Multimedia Designer India',
+      'Government Polytechnic Siddapur Alumni',
+    ],
+    alternates: {
+      canonical: '/about',
+    },
+    openGraph: {
+      title: `About ${name} | Video Editor & Designer`,
+      description: `Learn more about ${name}'s journey, background, and editing craft.`,
+      url: '/about',
+    },
   };
 }
 
