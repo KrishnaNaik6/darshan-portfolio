@@ -14,15 +14,16 @@ import {
   Settings
 } from '@/types/portfolio';
 import { generateSlug } from '@/lib/slug';
+import { getSupabaseClient, isSupabaseConfigured } from '@/lib/supabase';
 
 export { generateSlug };
 
-// Path to data/portfolio.json at the workspace root
+// Path to data/portfolio.json at workspace root
 const DATA_DIR = path.join(process.cwd(), 'data');
 const PORTFOLIO_FILE = path.join(DATA_DIR, 'portfolio.json');
 const TMP_FILE = path.join(os.tmpdir(), 'darshan_portfolio_cache.json');
 
-// In-memory cache for ultra-fast serverless reads & fallback
+// In-memory cache
 let memoryPortfolioCache: PortfolioData | null = null;
 
 const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
@@ -84,110 +85,82 @@ function mergeWithDefaults(parsed: Partial<PortfolioData>): PortfolioData {
 }
 
 /**
- * Optional KV / Upstash Redis helper for zero-latency distributed storage
+ * Reads local bundled data from data/portfolio.json
  */
-function getKvConfig() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (url && token) {
-    return { url: url.replace(/\/$/, ''), token };
-  }
-  return null;
-}
-
-async function fetchFromKv(): Promise<PortfolioData | null> {
-  const kv = getKvConfig();
-  if (!kv) return null;
-
+async function readLocalPortfolioFile(): Promise<PortfolioData> {
   try {
-    const res = await fetch(`${kv.url}/get/darshan_portfolio_data`, {
-      headers: { Authorization: `Bearer ${kv.token}` },
-      cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json && json.result) {
-      const parsed = typeof json.result === 'string' ? JSON.parse(json.result) : json.result;
-      return parsed;
-    }
-  } catch (err) {
-    console.warn('Failed to fetch from KV:', err);
-  }
-  return null;
-}
-
-async function saveToKv(data: PortfolioData): Promise<void> {
-  const kv = getKvConfig();
-  if (!kv) return;
-
-  try {
-    const payload = JSON.stringify(data);
-    await fetch(`${kv.url}/set/darshan_portfolio_data`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${kv.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    console.error('Failed to save to KV:', err);
+    const raw = await fs.readFile(PORTFOLIO_FILE, 'utf-8');
+    const parsed = JSON.parse(raw) as Partial<PortfolioData>;
+    return mergeWithDefaults(parsed);
+  } catch (error) {
+    console.error('Failed to read local portfolio.json:', error);
+    return DEFAULT_PORTFOLIO_DATA;
   }
 }
 
 /**
- * Optional GitHub API Sync: commits changes directly to GitHub repository
- * when GITHUB_TOKEN is configured in Vercel Environment Variables.
+ * Fetch portfolio data from Supabase
  */
-async function syncToGithub(data: PortfolioData): Promise<void> {
-  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-  if (!token) return;
-
-  const repo = process.env.GITHUB_REPOSITORY || 'KrishnaNaik6/darshan-portfolio';
-  const branch = process.env.GITHUB_BRANCH || 'main';
-  const filePath = 'data/portfolio.json';
-  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+async function fetchFromSupabase(): Promise<PortfolioData | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
 
   try {
-    let sha: string | undefined;
-    const getRes = await fetch(`${url}?ref=${branch}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'DarshanPortfolio-CMS',
-      },
-      cache: 'no-store',
-    });
+    const { data, error } = await supabase
+      .from('portfolio_data')
+      .select('data')
+      .eq('id', 'main')
+      .maybeSingle();
 
-    if (getRes.ok) {
-      const getJson = await getRes.json();
-      sha = getJson.sha;
+    if (error) {
+      console.warn('Supabase query returned error (table may need schema migration):', error.message);
+      return null;
     }
 
-    const content = Buffer.from(JSON.stringify(data, null, 2), 'utf-8').toString('base64');
-    const putRes = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'DarshanPortfolio-CMS',
-      },
-      body: JSON.stringify({
-        message: 'chore(portfolio): update portfolio content via admin CMS',
-        content,
-        sha,
-        branch,
-      }),
-    });
-
-    if (putRes.ok) {
-      console.log('Successfully committed updated portfolio to GitHub repository!');
-    } else {
-      console.warn('GitHub API commit returned non-200:', putRes.status, await putRes.text());
+    if (data && data.data) {
+      return mergeWithDefaults(data.data as Partial<PortfolioData>);
     }
+
+    // Table exists but is empty -> Auto-seed from local data
+    console.log('Supabase portfolio_data is empty. Auto-seeding initial data from local portfolio.json...');
+    const localData = await readLocalPortfolioFile();
+    await saveToSupabase(localData);
+    return localData;
   } catch (err) {
-    console.error('Error committing to GitHub:', err);
+    console.warn('Supabase fetch exception:', err);
+    return null;
+  }
+}
+
+/**
+ * Save portfolio data to Supabase
+ */
+async function saveToSupabase(data: PortfolioData): Promise<boolean> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
+
+  try {
+    const { error } = await supabase
+      .from('portfolio_data')
+      .upsert(
+        {
+          id: 'main',
+          data,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      );
+
+    if (error) {
+      console.error('Failed to save data to Supabase:', error.message);
+      return false;
+    }
+
+    console.log('Successfully saved portfolio data to Supabase!');
+    return true;
+  } catch (err) {
+    console.error('Supabase upsert exception:', err);
+    return false;
   }
 }
 
@@ -203,7 +176,7 @@ async function ensureDataFileExists(): Promise<void> {
       await fs.writeFile(PORTFOLIO_FILE, JSON.stringify(DEFAULT_PORTFOLIO_DATA, null, 2), 'utf-8');
     }
   } catch {
-    // In serverless environment like Vercel, directory is read-only
+    // Read-only filesystem in serverless environments like Vercel
   }
 }
 
@@ -211,15 +184,16 @@ async function ensureDataFileExists(): Promise<void> {
  * Reads and returns the complete portfolio data with multi-tier fallback
  */
 export async function getPortfolioData(): Promise<PortfolioData> {
-  // 1. Check KV Storage (highest priority in cloud production if configured)
-  const kvData = await fetchFromKv();
-  if (kvData) {
-    const merged = mergeWithDefaults(kvData);
-    memoryPortfolioCache = merged;
-    return merged;
+  // 1. Prioritize Supabase Database if configured
+  if (isSupabaseConfigured()) {
+    const supabaseData = await fetchFromSupabase();
+    if (supabaseData) {
+      memoryPortfolioCache = supabaseData;
+      return supabaseData;
+    }
   }
 
-  // 2. Check /tmp file (writable on Vercel serverless and shared across worker threads)
+  // 2. Check /tmp file (writable on Vercel serverless)
   try {
     const rawTmp = await fs.readFile(TMP_FILE, 'utf-8');
     const parsedTmp = JSON.parse(rawTmp);
@@ -250,7 +224,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 }
 
 /**
- * Safely writes portfolio data back to storage (KV, GitHub, /tmp, and local file)
+ * Safely writes portfolio data back to storage (Supabase, /tmp, and local file)
  */
 export async function savePortfolioData(updatedData: PortfolioData): Promise<PortfolioData> {
   const merged = mergeWithDefaults(updatedData);
@@ -263,21 +237,12 @@ export async function savePortfolioData(updatedData: PortfolioData): Promise<Por
     console.warn('Failed to write to /tmp file:', tmpErr);
   }
 
-  // 2. Persist to KV / Upstash Redis if configured
-  try {
-    await saveToKv(merged);
-  } catch (kvErr) {
-    console.warn('KV persistence failed:', kvErr);
+  // 2. Persist to Supabase Database if configured
+  if (isSupabaseConfigured()) {
+    await saveToSupabase(merged);
   }
 
-  // 3. Persist to GitHub Repository if GITHUB_TOKEN is configured
-  try {
-    await syncToGithub(merged);
-  } catch (ghErr) {
-    console.warn('GitHub sync failed:', ghErr);
-  }
-
-  // 4. Write to local file on disk (works locally; caught gracefully on read-only Vercel runtime)
+  // 3. Write to local file on disk (works locally; caught gracefully on read-only Vercel runtime)
   try {
     await ensureDataFileExists();
     const tempFile = `${PORTFOLIO_FILE}.tmp.${Date.now()}`;

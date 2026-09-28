@@ -10,8 +10,11 @@ import {
   PlusCircle,
   HardDrive,
   CheckCircle2,
-  FolderTree
+  FolderTree,
+  Database,
+  RefreshCw
 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 
 interface DashboardOverviewProps {
   data: PortfolioData;
@@ -24,6 +27,42 @@ export function DashboardOverview({
   onNavigateTab,
   onOpenNewProject,
 }: DashboardOverviewProps) {
+  const [supabaseStatus, setSupabaseStatus] = useState<{
+    configured: boolean;
+    connected?: boolean;
+    message?: string;
+    updatedAt?: string | null;
+  } | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/supabase')
+      .then((res) => res.json())
+      .then((json) => setSupabaseStatus(json))
+      .catch(() => setSupabaseStatus({ configured: false, message: 'Could not check status' }));
+  }, []);
+
+  const handleSyncToSupabase = async () => {
+    setIsSyncing(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/admin/supabase', { method: 'POST' });
+      const json = await res.json();
+      if (res.ok) {
+        setSyncFeedback('✅ Successfully synced all content to Supabase database!');
+        const updated = await fetch('/api/admin/supabase').then((r) => r.json());
+        setSupabaseStatus(updated);
+      } else {
+        setSyncFeedback(`❌ ${json.error || 'Failed to sync'}`);
+      }
+    } catch {
+      setSyncFeedback('❌ Network error during sync');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const totalProjects = data.projects.length;
   const featuredProjects = data.projects.filter((p) => p.featured).length;
   const videoProjects = data.projects.filter((p) => p.category === 'video').length;
@@ -35,7 +74,7 @@ export function DashboardOverview({
     {
       title: 'Total Projects',
       value: totalProjects,
-      description: 'Items in portfolio.json',
+      description: 'Items in portfolio',
       icon: <Layers className="w-5 h-5 text-zinc-300" />,
       color: 'border-zinc-800',
     },
@@ -78,6 +117,47 @@ export function DashboardOverview({
 
   return (
     <div className="space-y-8">
+      {/* Supabase Status Banner */}
+      {supabaseStatus && (
+        <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+          supabaseStatus.connected
+            ? 'border-emerald-800/40 bg-emerald-950/20 text-emerald-300'
+            : supabaseStatus.configured
+            ? 'border-amber-800/40 bg-amber-950/20 text-amber-300'
+            : 'border-zinc-800 bg-zinc-900/40 text-zinc-400'
+        }`}>
+          <div className="flex items-center gap-2.5">
+            <Database className={`w-4 h-4 shrink-0 ${
+              supabaseStatus.connected ? 'text-emerald-400' : 'text-zinc-400'
+            }`} />
+            <div>
+              <span className="font-bold">
+                {supabaseStatus.connected
+                  ? 'Supabase Database: Connected & Syncing'
+                  : supabaseStatus.configured
+                  ? 'Supabase: Configured (Requires Schema Setup)'
+                  : 'Storage Mode: Local JSON / Serverless Fallback'}
+              </span>
+              <p className="text-[11px] opacity-80 pt-0.5">{supabaseStatus.message}</p>
+              {syncFeedback && <p className="font-semibold pt-1">{syncFeedback}</p>}
+            </div>
+          </div>
+
+          {supabaseStatus.configured && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={isSyncing}
+              onClick={handleSyncToSupabase}
+              className="gap-1.5 shrink-0 text-xs h-8 border-emerald-800/60 hover:bg-emerald-950/40"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync to Supabase Now'}
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Quick Action Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900/80 via-zinc-900/40 to-zinc-950">
         <div className="space-y-1">

@@ -129,6 +129,12 @@ async function runTests() {
     const statsData = await resStats.json();
     assert(statsData.stats.totalProjects >= 1, 'Stats API accurately counts projects');
 
+    // 12b. Supabase Diagnostics API
+    const resSupabase = await fetch(`${baseUrl}/api/admin/supabase`, {
+      headers: { Cookie: authCookie }
+    });
+    assert(resSupabase.status === 200, 'GET /api/admin/supabase returns 200 diagnostic info');
+
     // 13. Create Project via Admin API
     const testProjectPayload = {
       title: 'Automated Test Showcase Edit',
