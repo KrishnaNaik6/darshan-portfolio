@@ -1,0 +1,174 @@
+import { PortfolioData } from '@/types/portfolio';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Film,
+  Image as ImageIcon,
+  Palette,
+  Sparkles,
+  Layers,
+  PlusCircle,
+  HardDrive,
+  CheckCircle2,
+  FolderTree
+} from 'lucide-react';
+
+interface DashboardOverviewProps {
+  data: PortfolioData;
+  onNavigateTab: (tab: string) => void;
+  onOpenNewProject: () => void;
+}
+
+export function DashboardOverview({
+  data,
+  onNavigateTab,
+  onOpenNewProject,
+}: DashboardOverviewProps) {
+  const totalProjects = data.projects.length;
+  const featuredProjects = data.projects.filter((p) => p.featured).length;
+  const videoProjects = data.projects.filter((p) => p.category === 'video').length;
+  const imageProjects = data.projects.filter((p) => p.category === 'image').length;
+  const graphicProjects = data.projects.filter((p) => p.category === 'graphic').length;
+  const totalServices = data.services.length;
+
+  const statCards = [
+    {
+      title: 'Total Projects',
+      value: totalProjects,
+      description: 'Items in portfolio.json',
+      icon: <Layers className="w-5 h-5 text-zinc-300" />,
+      color: 'border-zinc-800',
+    },
+    {
+      title: 'Featured Projects',
+      value: featuredProjects,
+      description: 'Highlighted on homepage',
+      icon: <Sparkles className="w-5 h-5 text-amber-400" />,
+      color: 'border-amber-900/40 bg-amber-950/10',
+    },
+    {
+      title: 'Video Projects',
+      value: videoProjects,
+      description: 'Reels, promos & edits',
+      icon: <Film className="w-5 h-5 text-emerald-400" />,
+      color: 'border-emerald-900/40 bg-emerald-950/10',
+    },
+    {
+      title: 'Image Retouching',
+      value: imageProjects,
+      description: 'Retouch & composites',
+      icon: <ImageIcon className="w-5 h-5 text-amber-400" />,
+      color: 'border-amber-900/40 bg-amber-950/10',
+    },
+    {
+      title: 'Graphic Designs',
+      value: graphicProjects,
+      description: 'Posters, covers & kits',
+      icon: <Palette className="w-5 h-5 text-indigo-400" />,
+      color: 'border-indigo-900/40 bg-indigo-950/10',
+    },
+    {
+      title: 'Active Services',
+      value: totalServices,
+      description: 'Offerings listed on site',
+      icon: <CheckCircle2 className="w-5 h-5 text-zinc-400" />,
+      color: 'border-zinc-800',
+    },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Quick Action Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900/80 via-zinc-900/40 to-zinc-950">
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold text-zinc-100">
+            Welcome back, {data.profile.name || 'Darshan'}
+          </h2>
+          <p className="text-sm text-zinc-400 font-light">
+            Manage your visual projects, services, bio, and Google Drive media connections.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5">
+          <Button onClick={onOpenNewProject} variant="accent" className="gap-2 text-xs sm:text-sm">
+            <PlusCircle className="w-4 h-4" />
+            Add New Project
+          </Button>
+          <Button onClick={() => onNavigateTab('profile')} variant="outline" className="text-xs sm:text-sm">
+            Edit Profile & Hero
+          </Button>
+          <Button onClick={() => onNavigateTab('drive-tester')} variant="secondary" className="text-xs sm:text-sm gap-1.5">
+            <HardDrive className="w-3.5 h-3.5" />
+            Test Drive Link
+          </Button>
+        </div>
+      </div>
+
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {statCards.map((stat, i) => (
+          <Card key={i} className={`p-4 space-y-2 ${stat.color}`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-400 font-medium line-clamp-1">{stat.title}</span>
+              {stat.icon}
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-white">{stat.value}</div>
+            <div className="text-[11px] text-zinc-500 line-clamp-1">{stat.description}</div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Google Drive Organization Guidelines Box */}
+      <Card className="p-6 border-zinc-800 bg-zinc-950/60">
+        <CardHeader className="p-0 pb-4">
+          <div className="flex items-center gap-2 text-amber-400 font-bold text-sm uppercase tracking-wider">
+            <FolderTree className="w-4 h-4" />
+            Google Drive Media Workflow Guide
+          </div>
+          <CardTitle className="text-base sm:text-lg text-zinc-200">
+            How to link your videos and images seamlessly:
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 space-y-4 text-xs sm:text-sm text-zinc-400 leading-relaxed font-light">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div className="p-4 rounded-xl border border-zinc-800/80 bg-zinc-900/40 space-y-2">
+              <div className="font-bold text-zinc-200 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 text-amber-400 text-xs flex items-center justify-center font-mono">
+                  1
+                </span>
+                Upload to Google Drive
+              </div>
+              <p className="text-zinc-400 text-xs">
+                Upload your video or high-res graphic into your Google Drive folder structure (e.g., <code>Darshan Portfolio / Videos / Reels</code>).
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl border border-zinc-800/80 bg-zinc-900/40 space-y-2">
+              <div className="font-bold text-zinc-200 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 text-amber-400 text-xs flex items-center justify-center font-mono">
+                  2
+                </span>
+                Set File Sharing to &quot;Anyone with the link&quot;
+              </div>
+              <p className="text-zinc-400 text-xs">
+                Right-click the file in Drive → Share → change General Access to <strong>&quot;Anyone with the link can view&quot;</strong>.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl border border-zinc-800/80 bg-zinc-900/40 space-y-2">
+              <div className="font-bold text-zinc-200 flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-zinc-800 text-amber-400 text-xs flex items-center justify-center font-mono">
+                  3
+                </span>
+                Paste Link into Project Form
+              </div>
+              <p className="text-zinc-400 text-xs">
+                Copy the link and paste it into the <em>Media URL</em> or <em>Thumbnail URL</em> field. The app automatically extracts the file ID and builds the video player &amp; high-res image previews.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
