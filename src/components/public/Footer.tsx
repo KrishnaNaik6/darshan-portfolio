@@ -157,8 +157,20 @@ export function Footer({ profile, socials }: FooterProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <p>© {currentYear} {profile.name || 'Darshan'}. All rights reserved.</p>
+
+          <p className="text-zinc-400 text-center">
+            Designed and developed by{' '}
+            <a
+              href="https://krishna-naik.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-200 hover:text-amber-400 font-medium transition-colors underline decoration-zinc-700 hover:decoration-amber-400 underline-offset-4"
+            >
+              Krishna
+            </a>
+          </p>
 
           <div className="flex items-center gap-6">
             <Link
