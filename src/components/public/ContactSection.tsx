@@ -15,7 +15,15 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { InstagramIcon, YoutubeIcon, LinkedinIcon, BehanceIcon } from '@/components/ui/social-icons';
+import {
+  InstagramIcon,
+  YoutubeIcon,
+  LinkedinIcon,
+  BehanceIcon,
+  TwitterIcon,
+  GithubIcon,
+} from '@/components/ui/social-icons';
+import { isSocialLinkActive } from '@/lib/socials';
 
 interface ContactSectionProps {
   contact: Contact;
@@ -106,7 +114,7 @@ export function ContactSection({ contact, profile, socials }: ContactSectionProp
             )}
 
             {/* WhatsApp CTA */}
-            {socials.whatsapp && (
+            {isSocialLinkActive(socials, 'whatsapp') && (
               <a
                 href={socials.whatsapp}
                 target="_blank"
@@ -151,48 +159,70 @@ export function ContactSection({ contact, profile, socials }: ContactSectionProp
           <div className="pt-4 space-y-2">
             <div className="text-xs text-zinc-500 uppercase tracking-wider">Follow & Portfolios</div>
             <div className="flex flex-wrap gap-2">
-              {socials.instagram && (
+              {isSocialLinkActive(socials, 'instagram') && (
                 <a
                   href={socials.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-pink-400 hover:border-zinc-700 transition-colors"
                   aria-label="Instagram"
                 >
                   <InstagramIcon className="w-4 h-4" />
                 </a>
               )}
-              {socials.youtube && (
+              {isSocialLinkActive(socials, 'youtube') && (
                 <a
                   href={socials.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 hover:border-zinc-700 transition-colors"
                   aria-label="YouTube"
                 >
                   <YoutubeIcon className="w-4 h-4" />
                 </a>
               )}
-              {socials.behance && (
+              {isSocialLinkActive(socials, 'behance') && (
                 <a
                   href={socials.behance}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-blue-400 hover:border-zinc-700 transition-colors"
                   aria-label="Behance"
                 >
                   <BehanceIcon className="w-4 h-4" />
                 </a>
               )}
-              {socials.linkedin && (
+              {isSocialLinkActive(socials, 'linkedin') && (
                 <a
                   href={socials.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-sky-400 hover:border-zinc-700 transition-colors"
                   aria-label="LinkedIn"
                 >
                   <LinkedinIcon className="w-4 h-4" />
+                </a>
+              )}
+              {isSocialLinkActive(socials, 'twitter') && (
+                <a
+                  href={socials.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 transition-colors"
+                  aria-label="X (Twitter)"
+                >
+                  <TwitterIcon className="w-4 h-4" />
+                </a>
+              )}
+              {isSocialLinkActive(socials, 'github') && (
+                <a
+                  href={socials.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-purple-400 hover:border-zinc-700 transition-colors"
+                  aria-label="GitHub"
+                >
+                  <GithubIcon className="w-4 h-4" />
                 </a>
               )}
             </div>

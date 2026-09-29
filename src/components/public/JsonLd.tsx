@@ -1,5 +1,6 @@
 import React from 'react';
 import { PortfolioData, Project } from '@/types/portfolio';
+import { isSocialLinkActive } from '@/lib/socials';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app').replace(/\/$/, '');
 
@@ -11,11 +12,13 @@ export function GlobalJsonLd({ data }: JsonLdProps) {
   const { profile, socials, services } = data;
 
   const sameAsLinks = [
-    socials.instagram,
-    socials.youtube,
-    socials.behance,
-    socials.linkedin,
-    socials.whatsapp,
+    isSocialLinkActive(socials, 'instagram') ? socials.instagram : null,
+    isSocialLinkActive(socials, 'youtube') ? socials.youtube : null,
+    isSocialLinkActive(socials, 'behance') ? socials.behance : null,
+    isSocialLinkActive(socials, 'linkedin') ? socials.linkedin : null,
+    isSocialLinkActive(socials, 'whatsapp') ? socials.whatsapp : null,
+    isSocialLinkActive(socials, 'twitter') ? socials.twitter : null,
+    isSocialLinkActive(socials, 'github') ? socials.github : null,
   ].filter(Boolean) as string[];
 
   // 1. Person Schema (Darshan G Poojari)

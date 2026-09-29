@@ -49,6 +49,16 @@ export interface Socials {
   whatsapp?: string;
   twitter?: string;
   github?: string;
+  enabled?: {
+    instagram?: boolean;
+    youtube?: boolean;
+    behance?: boolean;
+    linkedin?: boolean;
+    whatsapp?: boolean;
+    twitter?: boolean;
+    github?: boolean;
+    [key: string]: boolean | undefined;
+  };
 }
 
 export interface Hero {

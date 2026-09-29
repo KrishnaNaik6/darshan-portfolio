@@ -4,7 +4,15 @@ import {
   MessageCircle,
   Lock
 } from 'lucide-react';
-import { InstagramIcon, YoutubeIcon, LinkedinIcon, BehanceIcon } from '@/components/ui/social-icons';
+import {
+  InstagramIcon,
+  YoutubeIcon,
+  LinkedinIcon,
+  BehanceIcon,
+  TwitterIcon,
+  GithubIcon,
+} from '@/components/ui/social-icons';
+import { isSocialLinkActive } from '@/lib/socials';
 
 interface FooterProps {
   profile: Profile;
@@ -67,51 +75,51 @@ export function Footer({ profile, socials }: FooterProps) {
               Connect
             </h4>
             <div className="flex flex-col space-y-2 text-sm">
-              {socials.instagram && (
+              {isSocialLinkActive(socials, 'instagram') && (
                 <a
                   href={socials.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-zinc-100 transition-colors"
+                  className="inline-flex items-center gap-2 hover:text-pink-400 transition-colors"
                 >
                   <InstagramIcon className="w-4 h-4 text-zinc-400" />
                   Instagram
                 </a>
               )}
-              {socials.youtube && (
+              {isSocialLinkActive(socials, 'youtube') && (
                 <a
                   href={socials.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-zinc-100 transition-colors"
+                  className="inline-flex items-center gap-2 hover:text-red-400 transition-colors"
                 >
                   <YoutubeIcon className="w-4 h-4 text-zinc-400" />
                   YouTube
                 </a>
               )}
-              {socials.behance && (
+              {isSocialLinkActive(socials, 'behance') && (
                 <a
                   href={socials.behance}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-zinc-100 transition-colors"
+                  className="inline-flex items-center gap-2 hover:text-blue-400 transition-colors"
                 >
                   <BehanceIcon className="w-4 h-4 text-zinc-400" />
                   Behance
                 </a>
               )}
-              {socials.linkedin && (
+              {isSocialLinkActive(socials, 'linkedin') && (
                 <a
                   href={socials.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 hover:text-zinc-100 transition-colors"
+                  className="inline-flex items-center gap-2 hover:text-sky-400 transition-colors"
                 >
                   <LinkedinIcon className="w-4 h-4 text-zinc-400" />
                   LinkedIn
                 </a>
               )}
-              {socials.whatsapp && (
+              {isSocialLinkActive(socials, 'whatsapp') && (
                 <a
                   href={socials.whatsapp}
                   target="_blank"
@@ -120,6 +128,28 @@ export function Footer({ profile, socials }: FooterProps) {
                 >
                   <MessageCircle className="w-4 h-4 text-emerald-400" />
                   WhatsApp
+                </a>
+              )}
+              {isSocialLinkActive(socials, 'twitter') && (
+                <a
+                  href={socials.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 hover:text-zinc-100 transition-colors"
+                >
+                  <TwitterIcon className="w-4 h-4 text-zinc-400" />
+                  X (Twitter)
+                </a>
+              )}
+              {isSocialLinkActive(socials, 'github') && (
+                <a
+                  href={socials.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 hover:text-purple-400 transition-colors"
+                >
+                  <GithubIcon className="w-4 h-4 text-zinc-400" />
+                  GitHub
                 </a>
               )}
             </div>
