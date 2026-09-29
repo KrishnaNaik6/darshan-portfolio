@@ -4,7 +4,7 @@ import './globals.css';
 import { getPortfolioData } from '@/lib/portfolio';
 import { GlobalJsonLd } from '@/components/public/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app').replace(/\/$/, '');
 
 const inter = Inter({
   subsets: ['latin'],

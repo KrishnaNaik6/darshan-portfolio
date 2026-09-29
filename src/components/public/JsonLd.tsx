@@ -1,7 +1,7 @@
 import React from 'react';
 import { PortfolioData, Project } from '@/types/portfolio';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://darshan-portfolio.vercel.app').replace(/\/$/, '');
 
 interface JsonLdProps {
   data: PortfolioData;

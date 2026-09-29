@@ -23,13 +23,15 @@ export interface AdminSession {
 export function validateCredentials(username?: string, password?: string): boolean {
   if (!username || !password) return false;
 
-  const expectedUser = process.env.ADMIN_USERNAME || DEFAULT_ADMIN_USERNAME;
-  const expectedPass = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+  const expectedUser = (process.env.ADMIN_USERNAME || DEFAULT_ADMIN_USERNAME).trim();
+  const expectedPass = (process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD).trim();
+  const cleanUser = username.trim();
+  const cleanPass = password.trim();
 
   try {
-    const userBuffer = Buffer.from(username);
+    const userBuffer = Buffer.from(cleanUser);
     const expectedUserBuffer = Buffer.from(expectedUser);
-    const passBuffer = Buffer.from(password);
+    const passBuffer = Buffer.from(cleanPass);
     const expectedPassBuffer = Buffer.from(expectedPass);
 
     if (userBuffer.length !== expectedUserBuffer.length || passBuffer.length !== expectedPassBuffer.length) {

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getPortfolioData } from '@/lib/portfolio';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const data = await getPortfolioData();

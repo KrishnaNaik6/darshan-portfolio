@@ -97,21 +97,24 @@ async function runTests() {
     const resBadLogin = await fetch(`${baseUrl}/api/admin/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'darshan_admin', password: 'wrong_password' })
+      body: JSON.stringify({ username: 'fake_user_test', password: 'wrong_password_123' })
     });
     assert(resBadLogin.status === 401, 'Invalid login credentials blocked with 401');
 
     // 10. Login with valid credentials
+    const validUser = process.env.ADMIN_USERNAME || 'Darshan';
+    const validPass = process.env.ADMIN_PASSWORD || 'DPoojari@2026';
+
     const resGoodLogin = await fetch(`${baseUrl}/api/admin/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'darshan_admin', password: 'darshan@editor2026' })
+      body: JSON.stringify({ username: validUser, password: validPass })
     });
     assert(resGoodLogin.status === 200, 'Valid login returns 200 OK');
     const setCookieHeader = resGoodLogin.headers.get('set-cookie');
     assert(setCookieHeader && setCookieHeader.includes('darshan_admin_token'), 'Login sets secure darshan_admin_token cookie');
 
-    const authCookie = setCookieHeader.split(';')[0];
+    const authCookie = setCookieHeader ? setCookieHeader.split(';')[0] : '';
 
     console.log('\n--- 3. Testing Admin Dashboard Operations with Session ---');
 

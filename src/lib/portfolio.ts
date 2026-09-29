@@ -51,8 +51,269 @@ const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
     secondaryCta: "Let's Work Together",
     badgeText: "Video Editor & Multimedia Designer"
   },
-  services: [],
-  projects: [],
+  services: [
+    {
+      id: "srv-001",
+      title: "Cinematic Video Editing",
+      category: "video",
+      shortDescription: "Story-driven narrative edits, high-energy YouTube content, social reels, commercial promos, and dynamic multimedia videos.",
+      features: [
+        "Pacing & Story Flow",
+        "Color Grading & LUT Styling",
+        "Sound Design & Audio Mastering",
+        "Dynamic Motion Graphics & Titles",
+        "Fast 4K Multi-cam Workflows"
+      ],
+      iconName: "Film",
+      order: 1
+    },
+    {
+      id: "srv-002",
+      title: "Creative Image Editing",
+      category: "image",
+      shortDescription: "High-end portrait retouching, commercial product grading, surreal photo composites, and fashion aesthetics.",
+      features: [
+        "High-End Frequency Separation",
+        "Complex Photo Manipulation",
+        "Commercial Product Cleanup",
+        "Editorial Color Tuning",
+        "Lighting & Atmosphere Enhancement"
+      ],
+      iconName: "Image",
+      order: 2
+    },
+    {
+      id: "srv-003",
+      title: "Brand & Graphic Design",
+      category: "graphic",
+      shortDescription: "Attention-grabbing YouTube thumbnails, cinematic posters, music album art, social media brand kits, and stream overlays.",
+      features: [
+        "High-CTR YouTube Thumbnails",
+        "Key Art & Posters",
+        "Music Album & Single Art",
+        "Branding & Social Visual Systems",
+        "Custom Vector Typography"
+      ],
+      iconName: "Palette",
+      order: 3
+    }
+  ],
+  projects: [
+    {
+      id: "proj-001",
+      slug: "tokyo-neon-drift-cinematic",
+      title: "Tokyo Neon Nights — Cinematic Teaser",
+      category: "video",
+      type: "video",
+      description: "High-energy rhythm cut with stylized neon color grading, custom sound design, and speed ramping for a street motorsport short.",
+      fullDescription: "A fast-paced promotional video blending atmospheric midnight street cinematography with bass-heavy sound design. Utilized custom DaVinci Resolve node trees for neon split-toning and Premiere Pro dynamic transitions.",
+      client: "SpeedCulture Media",
+      year: "2025",
+      duration: "01:15",
+      tools: [
+        "Premiere Pro",
+        "DaVinci Resolve",
+        "After Effects"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+      featured: true,
+      tags: [
+        "Cinematic",
+        "Color Grading",
+        "Sound Design",
+        "Automotive"
+      ],
+      order: 1
+    },
+    {
+      id: "proj-002",
+      slug: "surreal-cyber-renaissance",
+      title: "Cyber Renaissance — Surreal Retouch",
+      category: "image",
+      type: "image",
+      description: "A complex 18-layer digital composite fusing classical Renaissance portraiture with futuristic cybernetic augmentations and neon luminescence.",
+      fullDescription: "Constructed over 14 hours in Photoshop, this project involved meticulous skin texture reconstruction, custom lighting passes to blend robotic components, and subtle atmospheric dust particles.",
+      client: "NeoArt Collective",
+      year: "2025",
+      duration: "Digital Art",
+      tools: [
+        "Photoshop",
+        "Lightroom",
+        "Camera Raw"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=90",
+      featured: true,
+      tags: [
+        "Photo Manipulation",
+        "Cyberpunk",
+        "Retouching",
+        "Key Visual"
+      ],
+      order: 2
+    },
+    {
+      id: "proj-003",
+      slug: "origins-documentary-film-poster",
+      title: "Origins — Film Poster & Key Art",
+      category: "graphic",
+      type: "image",
+      description: "Theatrical release poster featuring dramatic negative space, custom editorial typography, and high-contrast dual-tone lighting.",
+      fullDescription: "Designed for an independent nature and astronomy documentary. The goal was to evoke wonder and isolation using monolithic layout hierarchy, deep textured grain, and refined Swiss typography.",
+      client: "Horizon Studios",
+      year: "2024",
+      duration: "Print & Digital",
+      tools: [
+        "Photoshop",
+        "Illustrator",
+        "InDesign"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=1920&q=90",
+      featured: true,
+      tags: [
+        "Film Poster",
+        "Typography",
+        "Branding",
+        "Key Art"
+      ],
+      order: 3
+    },
+    {
+      id: "proj-004",
+      slug: "urban-fashion-commercial-reel",
+      title: "Aether Streetwear — Commercial Reel",
+      category: "video",
+      type: "video",
+      description: "Snappy, 9:16 vertical commercial video crafted for social channels with kinetic typography and sync-to-beat audio cuts.",
+      fullDescription: "Tailored for Instagram Reels and TikTok ad placement. Every frame was cut to mirror the rhythm of the custom UK garage beat, driving 3.2M impressions and a 28% click-through spike for the fashion line.",
+      client: "Aether Apparel",
+      year: "2025",
+      duration: "00:45",
+      tools: [
+        "Premiere Pro",
+        "After Effects",
+        "Logic Pro"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      featured: true,
+      tags: [
+        "Reels",
+        "Commercial",
+        "Motion Graphics",
+        "Fashion"
+      ],
+      order: 4
+    },
+    {
+      id: "proj-005",
+      slug: "high-fashion-editorial-color-grade",
+      title: "Vogue Noir — Editorial Color Grade",
+      category: "image",
+      type: "image",
+      description: "Intimate high-fashion lookbook retouching featuring filmic grain, subtle skin micro-contrast, and luxurious monochromatic tonal curves.",
+      fullDescription: "Worked directly with photographer raw files to deliver 24 magazine spreads. Applied non-destructive dodge & burn alongside tailored 3D LUT curves for timeless print quality.",
+      client: "Lumina Mag",
+      year: "2024",
+      duration: "Editorial",
+      tools: [
+        "Capture One",
+        "Photoshop",
+        "Lightroom"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1920&q=90",
+      featured: true,
+      tags: [
+        "Editorial",
+        "Fashion",
+        "Color Grading",
+        "Beauty"
+      ],
+      order: 5
+    },
+    {
+      id: "proj-006",
+      slug: "synthwave-ep-visual-identity",
+      title: "Overdrive EP — Album & Identity",
+      category: "graphic",
+      type: "image",
+      description: "Complete visual identity for an electronic music release including vinyl sleeve, animated Spotify Canvas, and promotional assets.",
+      fullDescription: "Created an evocative 80s retro-futuristic emblem combined with holographic foil styling and custom 3D wireframes. Delivered in print-ready CMYK and high-res digital display standards.",
+      client: "Waveform Records",
+      year: "2024",
+      duration: "Album Package",
+      tools: [
+        "Photoshop",
+        "Illustrator",
+        "Blender"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1920&q=90",
+      featured: true,
+      tags: [
+        "Album Art",
+        "Cover Design",
+        "Branding",
+        "3D Art"
+      ],
+      order: 6
+    },
+    {
+      id: "proj-007",
+      slug: "apex-esports-youtube-branding",
+      title: "Apex Championship — YouTube Package",
+      category: "graphic",
+      type: "image",
+      description: "High-CTR 3D YouTube thumbnails, banner pack, and stream starting screens engineered for maximum gamer audience engagement.",
+      fullDescription: "Optimized thumbnail templates that boosted video click-through rates by 42%. Features custom 3D lighting, dynamic action cuts, and punchy expression isolation.",
+      client: "Apex Arena",
+      year: "2025",
+      duration: "YouTube Pack",
+      tools: [
+        "Photoshop",
+        "Cinema 4D"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=90",
+      featured: false,
+      tags: [
+        "Thumbnails",
+        "YouTube",
+        "Gaming",
+        "Graphic Design"
+      ],
+      order: 7
+    },
+    {
+      id: "proj-008",
+      slug: "alpine-expedition-documentary-cut",
+      title: "Summit Silence — Mountain Doc Short",
+      category: "video",
+      type: "video",
+      description: "Atmospheric, slow-burn documentary cut featuring drone footage color matched with vintage 16mm archival film inserts.",
+      fullDescription: "Edited a 5-minute showcase film for an outdoor equipment brand. Focus was on immersive nature sound design, spatial audio transitions, and natural cold-tone color grades.",
+      client: "Nordic Peak Gear",
+      year: "2024",
+      duration: "04:20",
+      tools: [
+        "DaVinci Resolve",
+        "Premiere Pro"
+      ],
+      thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
+      mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      featured: false,
+      tags: [
+        "Documentary",
+        "Cinematic",
+        "Color Grade",
+        "Outdoor"
+      ],
+      order: 8
+    }
+  ],
   about: {
     description: "I'm Darshan G Poojari, a passionate video editor and multimedia designer from Sirsi, Karnataka.",
     skills: ["Multimedia Production", "Video Editing", "Image Retouching", "Graphic Design", "HTML / CSS", "AWS S3"]
