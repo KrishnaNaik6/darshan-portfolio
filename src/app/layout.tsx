@@ -107,6 +107,9 @@ export async function generateMetadata(): Promise<Metadata> {
       creator: '@darshan_poojari',
       images: [data.profile.profileImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=90'],
     },
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION || 'google30aad7d6d6a2d81e',
+    },
     robots: {
       index: true,
       follow: true,
