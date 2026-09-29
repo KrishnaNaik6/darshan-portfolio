@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { PortfolioData } from '@/types/portfolio';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,8 @@ import {
   CheckCircle2,
   FolderTree,
   Database,
-  RefreshCw
+  RefreshCw,
+  Camera
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 
@@ -158,26 +160,56 @@ export function DashboardOverview({
         </div>
       )}
 
-      {/* Quick Action Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900/80 via-zinc-900/40 to-zinc-950">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-zinc-100">
-            Welcome back, {data.profile.name || 'Darshan'}
-          </h2>
-          <p className="text-sm text-zinc-400 font-light">
-            Manage your visual projects, services, bio, and Google Drive media connections.
-          </p>
+      {/* Quick Action Bar with Avatar & Shortcuts */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 p-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900/90 via-zinc-900/50 to-zinc-950 relative overflow-hidden">
+        <div className="flex items-center gap-4">
+          {/* User Photo Avatar */}
+          <div
+            onClick={() => onNavigateTab('profile')}
+            className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-500/30 relative bg-zinc-950 shrink-0 cursor-pointer group shadow-lg hover:border-amber-500 transition-all"
+            title="Click to manage photo"
+          >
+            {data.profile.profileImage ? (
+              <Image
+                src={data.profile.profileImage}
+                alt={data.profile.name || 'Darshan'}
+                fill
+                className="object-cover object-top group-hover:scale-105 transition-transform"
+                unoptimized={data.profile.profileImage.startsWith('data:') || data.profile.profileImage.includes('drive.google.com')}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-zinc-900 text-amber-500 font-bold font-mono text-lg">
+                DP
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-semibold transition-opacity">
+              Edit
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+              Welcome back, {data.profile.name || 'Darshan'}
+              <span className="text-[11px] font-normal text-amber-400/90 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                {data.profile.role || 'Video Editor'}
+              </span>
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-400 font-light">
+              Manage your visual projects, services, profile photo, and Google Drive media connections.
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2.5">
-          <Button onClick={onOpenNewProject} variant="accent" className="gap-2 text-xs sm:text-sm">
+        <div className="flex flex-wrap gap-2.5 w-full lg:w-auto">
+          <Button onClick={onOpenNewProject} variant="accent" className="gap-2 text-xs sm:text-sm flex-1 sm:flex-initial">
             <PlusCircle className="w-4 h-4" />
             Add New Project
           </Button>
-          <Button onClick={() => onNavigateTab('profile')} variant="outline" className="text-xs sm:text-sm">
-            Edit Profile & Hero
+          <Button onClick={() => onNavigateTab('profile')} variant="outline" className="gap-1.5 text-xs sm:text-sm flex-1 sm:flex-initial">
+            <Camera className="w-3.5 h-3.5 text-amber-400" />
+            Manage Photo & Profile
           </Button>
-          <Button onClick={() => onNavigateTab('drive-tester')} variant="secondary" className="text-xs sm:text-sm gap-1.5">
+          <Button onClick={() => onNavigateTab('drive-tester')} variant="secondary" className="text-xs sm:text-sm gap-1.5 flex-1 sm:flex-initial">
             <HardDrive className="w-3.5 h-3.5" />
             Test Drive Link
           </Button>

@@ -2,17 +2,26 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { LogOut, Globe, Shield, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AdminNavbarProps {
   username?: string;
+  userPhoto?: string;
+  profileName?: string;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 }
 
-export function AdminNavbar({ username = 'Darshan', onRefresh, isRefreshing }: AdminNavbarProps) {
+export function AdminNavbar({
+  username = 'Darshan',
+  userPhoto,
+  profileName,
+  onRefresh,
+  isRefreshing,
+}: AdminNavbarProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = React.useState(false);
 
@@ -32,9 +41,21 @@ export function AdminNavbar({ username = 'Darshan', onRefresh, isRefreshing }: A
     <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md px-4 sm:px-6 py-3.5 flex items-center justify-between">
       {/* Brand & Badge */}
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-          <Shield className="w-4 h-4" />
-        </div>
+        {userPhoto ? (
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-amber-500/40 relative bg-zinc-900 shadow-md shrink-0">
+            <Image
+              src={userPhoto}
+              alt={profileName || username}
+              fill
+              className="object-cover object-top"
+              unoptimized={userPhoto.startsWith('data:') || userPhoto.includes('drive.google.com')}
+            />
+          </div>
+        ) : (
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <Shield className="w-4 h-4" />
+          </div>
+        )}
         <div>
           <div className="flex items-center gap-2">
             <span className="font-bold text-sm sm:text-base text-zinc-100 tracking-wide uppercase">
@@ -44,8 +65,10 @@ export function AdminNavbar({ username = 'Darshan', onRefresh, isRefreshing }: A
               v1.0
             </span>
           </div>
-          <div className="text-xs text-zinc-400">
-            Logged in as <span className="text-zinc-200 font-medium">{username}</span>
+          <div className="text-xs text-zinc-400 flex items-center gap-1.5">
+            <span>Logged in as</span>
+            <span className="text-zinc-200 font-medium">{profileName || username}</span>
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
         </div>
       </div>
@@ -59,7 +82,7 @@ export function AdminNavbar({ username = 'Darshan', onRefresh, isRefreshing }: A
             onClick={onRefresh}
             disabled={isRefreshing}
             className="gap-1.5 text-xs hidden sm:inline-flex"
-            title="Reload latest data from portfolio.json"
+            title="Reload latest data from database"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -88,3 +111,4 @@ export function AdminNavbar({ username = 'Darshan', onRefresh, isRefreshing }: A
     </header>
   );
 }
+

@@ -70,6 +70,8 @@ export function AdminDashboardClient({ initialData, username }: AdminDashboardCl
       {/* Top Navbar */}
       <AdminNavbar
         username={username}
+        userPhoto={data.profile?.profileImage}
+        profileName={data.profile?.name}
         onRefresh={fetchFreshData}
         isRefreshing={isRefreshing}
       />

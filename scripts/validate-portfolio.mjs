@@ -201,7 +201,67 @@ async function runTests() {
     const resDeletedDetail = await fetch(`${baseUrl}/work/automated-test-showcase-edit`);
     assert(resDeletedDetail.status === 404, 'Deleted project correctly returns 404 on /work/[slug]');
 
-    console.log('\n--- 4. Google Drive Link Parsing Logic Tests ---');
+    console.log('\n--- 4. User Photo Management & Upload Tests ---');
+
+    // 18. GET current profile photo
+    const resPhotoGet = await fetch(`${baseUrl}/api/admin/profile/photo`, {
+      headers: { Cookie: authCookie }
+    });
+    assert(resPhotoGet.status === 200, 'GET /api/admin/profile/photo returns 200 OK');
+    const photoGetData = await resPhotoGet.json();
+    const initialPhoto = photoGetData.profileImage;
+    assert(typeof photoGetData.profileImage === 'string', 'Profile photo returns valid string value');
+
+    // 19. PUT update profile photo with URL
+    const testPhotoUrl = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800';
+    const resPhotoPut = await fetch(`${baseUrl}/api/admin/profile/photo`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: authCookie
+      },
+      body: JSON.stringify({ profileImage: testPhotoUrl })
+    });
+    assert(resPhotoPut.status === 200, 'PUT /api/admin/profile/photo updates photo with 200 OK');
+    const putData = await resPhotoPut.json();
+    assert(putData.success === true && putData.profileImage === testPhotoUrl, 'PUT photo updates profileImage in response');
+
+    // 20. DELETE profile photo
+    const resPhotoDelete = await fetch(`${baseUrl}/api/admin/profile/photo`, {
+      method: 'DELETE',
+      headers: { Cookie: authCookie }
+    });
+    assert(resPhotoDelete.status === 200, 'DELETE /api/admin/profile/photo deletes photo with 200 OK');
+    const deleteData = await resPhotoDelete.json();
+    assert(deleteData.success === true && deleteData.profileImage === '', 'DELETE photo sets profileImage to empty string');
+
+    // 21. POST /api/admin/upload simulate image upload
+    const dummyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const blob = new Blob([Buffer.from(dummyPngBase64, 'base64')], { type: 'image/png' });
+    const formData = new FormData();
+    formData.append('file', blob, 'test-avatar.png');
+    formData.append('isProfile', 'true');
+
+    const resUpload = await fetch(`${baseUrl}/api/admin/upload`, {
+      method: 'POST',
+      headers: { Cookie: authCookie },
+      body: formData
+    });
+    assert(resUpload.status === 200, 'POST /api/admin/upload uploads image with 200 OK');
+    const uploadData = await resUpload.json();
+    assert(uploadData.success === true && uploadData.url && uploadData.url.length > 10, 'Uploaded photo returns valid URL / data URI');
+
+    // 22. Restore initial or default photo
+    await fetch(`${baseUrl}/api/admin/profile/photo`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: authCookie
+      },
+      body: JSON.stringify({ profileImage: initialPhoto || testPhotoUrl })
+    });
+
+    console.log('\n--- 5. Google Drive Link Parsing Logic Tests ---');
     
     function extractGoogleDriveId(urlOrId) {
       if (!urlOrId || typeof urlOrId !== 'string') return null;

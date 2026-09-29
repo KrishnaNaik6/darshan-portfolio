@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckCircle2, User, Sparkles, Sliders } from 'lucide-react';
+import { UserPhotoManager } from '@/components/admin/UserPhotoManager';
 
 interface ProfileHeroManagerProps {
   profile: Profile;
@@ -113,72 +114,83 @@ export function ProfileHeroManager({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Profile Card */}
-      <Card className="p-6 border-zinc-800 bg-zinc-950/60">
-        <CardHeader className="p-0 pb-6 border-b border-zinc-800/80 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-amber-400" />
-              <CardTitle className="text-lg text-zinc-100">Profile Information</CardTitle>
-            </div>
-            {profileSaved && (
-              <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Saved!
-              </span>
-            )}
-          </div>
-          <CardDescription>
-            Your display name, professional role, bio, and direct contact details.
-          </CardDescription>
-        </CardHeader>
+    <div className="space-y-8">
+      {/* Interactive User Photo Manager */}
+      <UserPhotoManager
+        currentPhoto={profileImage}
+        name={name}
+        onPhotoChange={(newUrl) => {
+          setProfileImage(newUrl);
+        }}
+        onRefresh={onRefresh}
+      />
 
-        <form onSubmit={handleSaveProfile} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Profile Card */}
+        <Card className="p-6 border-zinc-800 bg-zinc-950/60">
+          <CardHeader className="p-0 pb-6 border-b border-zinc-800/80 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <User className="w-5 h-5 text-amber-400" />
+                <CardTitle className="text-lg text-zinc-100">Profile Information</CardTitle>
+              </div>
+              {profileSaved && (
+                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Saved!
+                </span>
+              )}
+            </div>
+            <CardDescription>
+              Your display name, professional role, bio, and direct contact details.
+            </CardDescription>
+          </CardHeader>
+
+          <form onSubmit={handleSaveProfile} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                  Display Name *
+                </label>
+                <Input
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                  Professional Role *
+                </label>
+                <Input
+                  required
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Display Name *
+                Short Bio *
               </label>
-              <Input
+              <Textarea
+                rows={3}
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
               />
             </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                Professional Role *
+                Profile Photo URL
               </label>
               <Input
-                required
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
+                placeholder="https://... (or use the uploader above)"
+                value={profileImage}
+                onChange={(e) => setProfileImage(e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-              Short Bio *
-            </label>
-            <Textarea
-              rows={3}
-              required
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-              Profile Photo URL
-            </label>
-            <Input
-              placeholder="https://..."
-              value={profileImage}
-              onChange={(e) => setProfileImage(e.target.value)}
-            />
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -322,6 +334,7 @@ export function ProfileHeroManager({
           </form>
         </Card>
       </div>
+    </div>
     </div>
   );
 }
